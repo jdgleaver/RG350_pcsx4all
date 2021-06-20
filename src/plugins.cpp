@@ -36,9 +36,9 @@ int LoadPlugins(void) {
 
 	ReleasePlugins();
 
-	/* If we are using per-disk memory cards, defer
-	 * loading until after the disk ID has been determined */
-	if ((Config.McdSlot1 != 0) && (Config.McdSlot2 != 0)) {
+	/* If we are using per-disk memory cards or disable one or both
+	 * of them, defer loading until the disk ID has been determined */
+	if (((Config.McdSlot1 != 0) && (Config.McdSlot2 != 0)) && ((Config.McdSlot1 != 17) && (Config.McdSlot2 != 17))) {
 		LoadMcd(MCD1, (char*)GetMemcardPath(1)); //Memcard 1
 		LoadMcd(MCD2, (char*)GetMemcardPath(2)); //Memcard 2
 	}

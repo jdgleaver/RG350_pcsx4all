@@ -139,8 +139,9 @@ typedef struct {
 	boolean VSyncWA; /* 1=InuYasha Sengoku Battle Fix */
 	u8 Cpu; /* 0=recompiler, 1=interpreter */
 	u8 PsxType; /* 0=ntsc, 1=pal */
-	u8 McdSlot1; /* mcd slot 1, 0=CdromId.1.mcr, otherwise mcd%03u.mcr */
-	u8 McdSlot2; /* mcd slot 2, 0=CdromId.2.mcr, otherwise mcd%03u.mcr */
+	u8 McdSlots; /* enabled slots, 0=both, 1=slot1, 2=slot2, 3=none */
+	u8 McdSlot1; /* mcd slot 1, 0=disabled, 17=CdromId.1.mcr, otherwise mcd%03u.mcr */
+	u8 McdSlot2; /* mcd slot 2, 0=disabled, 17=CdromId.2.mcr, otherwise mcd%03u.mcr */
 
 	/* Gamepad combo used to open menu
 	 * 0: L3 + R3
