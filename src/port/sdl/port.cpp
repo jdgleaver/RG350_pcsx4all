@@ -496,6 +496,9 @@ int config_load(const char *diskname)
 		} else if (!strcmp(line, "PsxType")) {
 			sscanf(arg, "%d", &value);
 			Config.PsxType = value;
+		} else if (!strcmp(line, "McdSlots")) {
+			sscanf(arg, "%d", &value);
+			Config.McdSlots = value;
 		} else if (!strcmp(line, "McdSlot1")) {
 			sscanf(arg, "%d", &value);
 			Config.McdSlot1 = value;
@@ -671,6 +674,7 @@ int config_save(const char *diskname)
 		   "VSyncWA %d\n"
 		   "Cpu %d\n"
 		   "PsxType %d\n"
+		   "McdSlots %d\n"
 		   "McdSlot1 %d\n"
 		   "McdSlot2 %d\n"
 		   "SpuIrq %d\n"
@@ -686,7 +690,7 @@ int config_save(const char *diskname)
 		   CONFIG_VERSION, Config.Xa, Config.Mdec, Config.PsxAuto, Config.Cdda, Config.AsyncCD,
 		   Config.HLE, Config.SlowBoot, Config.AnalogArrow, Config.AnalogMode, Config.RumbleGain, Config.MenuToggleCombo,
 		   Config.RCntFix, Config.VSyncWA, Config.Cpu, Config.PsxType,
-		   Config.McdSlot1, Config.McdSlot2, Config.SpuIrq, Config.SyncAudio,
+		   Config.McdSlots, Config.McdSlot1, Config.McdSlot2, Config.SpuIrq, Config.SyncAudio,
 		   Config.SpuUpdateFreq, Config.ForcedXAUpdates, Config.ShowFps,
 		   Config.FrameLimit, Config.FrameSkip, Config.VideoScaling,
 		   Config.VideoHwKeepAspect, Config.VideoHwFilter);
@@ -1144,27 +1148,33 @@ const char *GetMemcardPath(int slot) {
 
 void update_memcards(int load_mcd) {
 
-	if (Config.McdSlot1 == 0) {
-		if (string_is_empty(CdromId)) {
-			/* Fallback */
-			sprintf(McdPath1, "%s/%s", memcardsdir, "card1.mcd");
+		if (Config.McdSlot1 == 17) {
+			if (string_is_empty(CdromId)) {
+				/* Fallback */
+				sprintf(McdPath1, "%s/%s", memcardsdir, "card1.mcd");
+			} else {
+				sprintf(McdPath1, "%s/%s.1.mcr", memcardsdir, CdromId);
+			}
 		} else {
-			sprintf(McdPath1, "%s/%s.1.mcr", memcardsdir, CdromId);
-		}
-	} else {
-		sprintf(McdPath1, "%s/mcd%03d.mcr", memcardsdir, (int)Config.McdSlot1);
-	}
+			sprintf(McdPath1, "%s/mcd%03d.mcr", memcardsdir, (int)Config.McdSlot1);
+			}
+		if (Config.McdSlots == 2 || Config.McdSlots == 3) {
+			sprintf(McdPath1, "none", 0);
+		} 
 
-	if (Config.McdSlot2 == 0) {
-		if (string_is_empty(CdromId)) {
-			/* Fallback */
-			sprintf(McdPath2, "%s/%s", memcardsdir, "card2.mcd");
+		if (Config.McdSlot2 == 17) {
+			if (string_is_empty(CdromId)) {
+				/* Fallback */
+				sprintf(McdPath2, "%s/%s", memcardsdir, "card2.mcd");
+			} else {
+				sprintf(McdPath2, "%s/%s.2.mcr", memcardsdir, CdromId);
+			}
 		} else {
-			sprintf(McdPath2, "%s/%s.2.mcr", memcardsdir, CdromId);
+			sprintf(McdPath2, "%s/mcd%03d.mcr", memcardsdir, (int)Config.McdSlot2);
 		}
-	} else {
-		sprintf(McdPath2, "%s/mcd%03d.mcr", memcardsdir, (int)Config.McdSlot2);
-	}
+		if (Config.McdSlots == 1 || Config.McdSlots == 3) {
+			sprintf(McdPath2, "none", 0);
+		}
 
 	if (load_mcd & 1)
 		LoadMcd(MCD1, McdPath1); //Memcard 1
@@ -1430,8 +1440,8 @@ int main (int argc, char **argv)
 	setup_paths();
 
 	// PCSX
-	Config.McdSlot1 = 0;
-	Config.McdSlot2 = 1;
+	Config.McdSlot1 = 1;
+	Config.McdSlot2 = 2;
 	update_memcards(0);
 	strcpy(Config.PatchesDir, patchesdir);
 	strcpy(Config.BiosDir, biosdir);
@@ -2000,9 +2010,9 @@ int main (int argc, char **argv)
 		psxReset();
 	}
 
-	/* If we are using per-disk memory cards, load
-	 * them now */
-	if ((Config.McdSlot1 == 0) || (Config.McdSlot2 == 0)) {
+	/* If we are using per-disk memory cards
+	or disable one or both of them, load them now */
+	if ((Config.McdSlot1 == 17) || (Config.McdSlot2 == 17)) {
 		update_memcards(0);
 		LoadMcd(MCD1, (char*)GetMemcardPath(1)); //Memcard 1
 		LoadMcd(MCD2, (char*)GetMemcardPath(2)); //Memcard 2

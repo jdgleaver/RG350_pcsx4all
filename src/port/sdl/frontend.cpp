@@ -1384,17 +1384,48 @@ static char *VSyncWA_show()
 	return buf;
 }
 
+static int McdSlots_alter(u32 keys)
+{
+	if (keys & KEY_RIGHT) {
+		if (Config.McdSlots < 3) Config.McdSlots++;
+	} else if (keys & KEY_LEFT) {
+		if (Config.McdSlots > 0) Config.McdSlots--;
+	}
+	return 0;
+}
+
+static void McdSlots_hint()
+{
+	port_printf(6 * 8, 10 * 6, "Enable Memory Card Slots");
+}
+
+static char* McdSlots_show()
+{
+	static char buf[16];
+	switch (Config.McdSlots) {
+	case 0: sprintf(buf, "both");
+		break;
+	case 1: sprintf(buf, "slot 1 only");
+		break;
+	case 2: sprintf(buf, "slot 2 only");
+		break;
+	case 3: sprintf(buf, "none");
+		break;
+	}
+	return buf;
+}
+
 static int McdSlot1_alter(u32 keys)
 {
 	int slot = Config.McdSlot1;
 	if (keys & KEY_RIGHT)
 	{
-		if (++slot > 15) slot = 0;
+		if (++slot > 17) slot = 1;
 	}
 	else
 	if (keys & KEY_LEFT)
 	{
-		if (--slot < 0) slot = 15;
+		if (--slot < 1) slot = 17;
 	}
 	Config.McdSlot1 = slot;
 	update_memcards(1);
@@ -1404,15 +1435,19 @@ static int McdSlot1_alter(u32 keys)
 static char *McdSlot1_show()
 {
 	static char buf[32] = "\0";
-	if (Config.McdSlot1 == 0) {
-		if (string_is_empty(CdromId)) {
-			strcpy(buf, "per-disk");
-		} else {
-			sprintf(buf, "%s.1", CdromId);
-		}
+		if (Config.McdSlot1 == 17) {
+			if (string_is_empty(CdromId)) {
+				strcpy(buf, "per-disk");
+			} else {
+				sprintf(buf, "%s.1", CdromId);
+			}
 	} else {
 		sprintf(buf, "mcd%03d.mcr", (int)Config.McdSlot1);
 	}
+	
+	if (Config.McdSlots == 2 || Config.McdSlots == 3) {
+			sprintf(buf, "none", 0);
+		}
 	return buf;
 }
 
@@ -1421,12 +1456,12 @@ static int McdSlot2_alter(u32 keys)
 	int slot = Config.McdSlot2;
 	if (keys & KEY_RIGHT)
 	{
-		if (++slot > 16) slot = 0;
+		if (++slot > 17) slot = 1;
 	}
 	else
 	if (keys & KEY_LEFT)
 	{
-		if (--slot < 0) slot = 16;
+		if (--slot < 1) slot = 17;
 	}
 	Config.McdSlot2 = slot;
 	update_memcards(2);
@@ -1436,15 +1471,18 @@ static int McdSlot2_alter(u32 keys)
 static char *McdSlot2_show()
 {
 	static char buf[32] = "\0";
-	if (Config.McdSlot2 == 0) {
-		if (string_is_empty(CdromId)) {
-			strcpy(buf, "per-disk");
-		} else {
-			sprintf(buf, "%s.2", CdromId);
-		}
+		if (Config.McdSlot2 == 17) {
+			if (string_is_empty(CdromId)) {
+				strcpy(buf, "per-disk");
+			} else {
+				sprintf(buf, "%s.2", CdromId);
+			}
 	} else {
 		sprintf(buf, "mcd%03d.mcr", (int)Config.McdSlot2);
-	}
+		}
+		if (Config.McdSlots == 1 || Config.McdSlots == 3) {
+			sprintf(buf, "none", 0);
+		}
 	return buf;
 }
 
@@ -1459,6 +1497,7 @@ static int settings_defaults()
 	Config.AnalogMode = 3;
 	Config.RumbleGain = 100;
 	Config.MenuToggleCombo = 0;
+	Config.McdSlots = 0;
 	Config.AsyncCD = 0;
 	Config.RCntFix = 0;
 	Config.VSyncWA = 0;
@@ -1493,6 +1532,7 @@ static MENUITEM gui_SettingsItems[] = {
 #endif
 	{(char *)"RCntFix            ", NULL, &RCntFix_alter, &RCntFix_show, &RCntFix_hint},
 	{(char *)"VSyncWA            ", NULL, &VSyncWA_alter, &VSyncWA_show, &VSyncWA_hint},
+	{(char *)"Memory card Slots  ", NULL, &McdSlots_alter, &McdSlots_show, &McdSlots_hint},
 	{(char *)"Memory card Slot1  ", NULL, &McdSlot1_alter, &McdSlot1_show, NULL},
 	{(char *)"Memory card Slot2  ", NULL, &McdSlot2_alter, &McdSlot2_show, NULL},
 	{(char *)"Restore defaults   ", &settings_defaults, NULL, NULL, NULL},

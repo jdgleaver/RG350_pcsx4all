@@ -1583,9 +1583,15 @@ void psxBios__card_info() { // ab
 	{
 		case 0x00: case 0x01: case 0x02: case 0x03:
 			ret = 0x2;
+					
+			//	Originally provided by gameblala as a part of his hack for Codename: Tenka.
+			//	It's working without messing with channels for now, disabling MCD is enough to get it back to work.
+			
+			/* if (Config.McdSlots == 2 || Config.McdSlots == 3) ret = 0x8; */
 			break;
 		case 0x10: case 0x11: case 0x12: case 0x13:
 			ret = 0x2;
+			/* if (Config.McdSlots == 1 || Config.McdSlots == 3) ret = 0x8; */
 			break;
 		default:
 #ifdef PSXBIOS_LOG
